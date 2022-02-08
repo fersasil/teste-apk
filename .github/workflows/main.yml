@@ -1,7 +1,7 @@
 on:
   pull_request:
-  push:
-name: "Build & Release"
+    branches: [ master, develop ]
+name: "Build & Release on github"
 jobs:
   build:
     name: Build & Release
@@ -57,7 +57,7 @@ jobs:
           prerelease: ${{github.ref != 'refs/heads/master'}}
           body: "${{ github.event.head_commit.message }}"
           allowUpdates: ${{github.ref != 'refs/heads/master'}}
-          name: ${{ steps.extract_branch.outputs.branch }}
+          name: 'Develop: ${{ github.event.pull_request.title }}-${{ github.event.pull_request.title }}-${{ github.run_number }}'
       - name: Comment PR
         uses: actions/github-script@0.3.0
         if: github.event_name == 'pull_request'
