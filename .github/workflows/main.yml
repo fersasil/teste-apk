@@ -18,7 +18,7 @@ jobs:
       - run: flutter test --no-sound-null-safety
       - name: "Set flag from Commit"
         env:
-          IS_DEV: ${ github.ref != 'refs/heads/master }
+          IS_DEV: ${{ github.ref != refs/heads/master }}
         run: |
           if ${IS_DEV} == true; then
             echo "IS_DEV=true" >> $GITHUB_ENV
@@ -45,7 +45,7 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa"
-          tag: v1.0.${{ github.run_number }}
+          tag: v0.0.${{ github.run_number }}
           token: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
           prerelease: github.ref != 'refs/heads/master'
           body: "${{ github.event.head_commit.message }}"
@@ -58,4 +58,4 @@ jobs:
           github-token: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
           script: |
             const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.issues.createComment({ issue_number, owner, repo, body: '[Baixar apk](${{ steps.release.outputs.html_url}}])' });
+            github.issues.createComment({ issue_number, owner, repo, body: '[Baixar apk](${{ steps.release.outputs.html_url}})' });
