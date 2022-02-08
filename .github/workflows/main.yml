@@ -32,9 +32,18 @@ jobs:
           ln -s ../Runner.app
           cd ..
           zip -r app.ipa Payload
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Push to Releases
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa"
           tag: v1.0.${{ github.run_number }}
           token: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
+          bodyFile: "body.md"
+          prerelease: true
+          body: 
+          allowUpdates: true
+          name: ${{ steps.extract_branch.outputs.branch }}
