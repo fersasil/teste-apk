@@ -8,7 +8,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Dump GitHub context
-        env:
+        env: 
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: |
           echo "$GITHUB_CONTEXT"
