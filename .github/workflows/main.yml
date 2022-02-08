@@ -18,7 +18,7 @@ jobs:
       - run: flutter test --no-sound-null-safety
       - name: "Set flag from Commit"
         env:
-          IS_DEV: ${{ github.ref != 'refs/heads/master }}
+          IS_DEV: ${ github.ref != 'refs/heads/master }
         run: |
           if ${IS_DEV} == true; then
             echo "IS_DEV=true" >> $GITHUB_ENV
