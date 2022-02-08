@@ -7,18 +7,13 @@ jobs:
     name: Build & Release
     runs-on: macos-latest
     steps:
-      - name: Dump GitHub context
-        env: 
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: |
-          echo ${{ github.event.pull_request.title }}
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v1
         with:
           java-version: '12.x'
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '2.10.0'
+          flutter-version: '2.2.3'
       - run: flutter pub get
       - run: flutter test --no-sound-null-safety
       - name: "Set flag from Commit"
@@ -35,14 +30,14 @@ jobs:
             echo "flag set to false"
           fi
       - run: flutter build apk --debug --split-per-abi --no-sound-null-safety --dart-define=production=${{env.IS_PROD}}
-      - run: |
-          flutter build ios --no-codesign --no-sound-null-safety --dart-define=production=${{env.IS_PROD}}
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+      # - run: |
+      #     flutter build ios --no-codesign --no-sound-null-safety --dart-define=production=${{env.IS_PROD}}
+      #     cd build/ios/iphoneos
+      #     mkdir Payload
+      #     cd Payload
+      #     ln -s ../Runner.app
+      #     cd ..
+      #     zip -r app.ipa Payload
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
