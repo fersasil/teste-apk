@@ -1,13 +1,6 @@
 on:
-  pull_request:
-    branches:
-      - main
-      - master
-  push:
-    branches:
-      - main
-      - master
-      - develop
+  pull_request
+  push
 name: "Build & Release"
 jobs:
   build:
