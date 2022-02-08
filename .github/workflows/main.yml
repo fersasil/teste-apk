@@ -1,5 +1,8 @@
 on:
   pull_request:
+    - develop
+    - main
+    - master
   push:
 name: "Build & Release"
 jobs:
