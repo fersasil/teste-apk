@@ -40,8 +40,15 @@ jobs:
       #     allowUpdates: true
       #     name: ${{ steps.extract_branch.outputs.branch }}
       - name: Comment PR
-        uses: thollander/actions-comment-pull-request@v1
+        # uses: thollander/actions-comment-pull-request@v1
+        # if: github.event_name == 'pull_request'
+        # with:
+        #   message: "Example of message ! [Baixar apk](${{ steps.extract_branch.outputs.branch}}])"
+        #   GITHUB_TOKEN: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
+        uses: actions/github-script@0.3.0
         if: github.event_name == 'pull_request'
         with:
-          message: "Example of message ! [Baixar apk](${{ steps.extract_branch.outputs.branch}}])"
-          GITHUB_TOKEN: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
+          github-token: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.issues.createComment({ issue_number, owner, repo, body: 'Hello world ! 👋' });
