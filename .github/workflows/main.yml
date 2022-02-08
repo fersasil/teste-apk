@@ -16,7 +16,18 @@ jobs:
           flutter-version: '2.10.0'
       - run: flutter pub get
       - run: flutter test --no-sound-null-safety
-      - run: flutter build apk --debug --split-per-abi --no-sound-null-safety --dart-define=production=github.ref == 'refs/heads/master'
+      - name: "Set flag from Commit"
+        env:
+          IS_DEV: ${{ github.ref != 'refs/heads/master }}
+        run: |
+          if ${IS_DEV} == true; then
+            echo "IS_DEV=true" >> $GITHUB_ENV
+            echo "flag set to true"
+          else
+            echo "IS_DEV=false" >> $GITHUB_ENV
+            echo "flag set to false"
+          fi
+      - run: flutter build apk --debug --split-per-abi --no-sound-null-safety --dart-define=production=${{env.IS_DEV}}
       - run: |
           flutter build ios --no-codesign
           cd build/ios/iphoneos
