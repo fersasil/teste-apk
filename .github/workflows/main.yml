@@ -1,14 +1,7 @@
 on:
   pull_request:
-    branches:
-      - main
-      - master
-  push:
-    branches:
-      - main
-      - master
-      - develop
-name: "Build & Release"
+    branches: [ master, develop ]
+name: "Build & Release on github"
 jobs:
   build:
     name: Build & Release
@@ -20,21 +13,51 @@ jobs:
           java-version: '12.x'
       - uses: subosito/flutter-action@v1
         with:
-          flutter-version: '2.10.0'
+          flutter-version: '2.2.3'
       - run: flutter pub get
-      - run: flutter test
-      - run: flutter build apk --debug --split-per-abi
-      - run: |
-          flutter build ios --no-codesign
-          cd build/ios/iphoneos
-          mkdir Payload
-          cd Payload
-          ln -s ../Runner.app
-          cd ..
-          zip -r app.ipa Payload
+      - run: flutter test --no-sound-null-safety
+      - name: "Set flag from Commit"
+        env:
+          IS_PROD: ${{ github.ref == 'refs/heads/master' }}
+        run: |
+          if ${IS_PROD} == true; then
+            echo "IS_PROD=true" >> $GITHUB_ENV
+            echo "TAG=v0.0.${{ github.run_number }}-prod" >> $GITHUB_ENV
+            echo "flag set to true"
+          else
+            echo "IS_PROD=false" >> $GITHUB_ENV
+            echo "TAG=v0.0.${{ github.run_number }}-dev" >> $GITHUB_ENV
+            echo "flag set to false"
+          fi
+      - run: flutter build apk --debug --split-per-abi --no-sound-null-safety --dart-define=production=${{env.IS_PROD}}
+      # - run: |
+      #     flutter build ios --no-codesign --no-sound-null-safety --dart-define=production=${{env.IS_PROD}}
+      #     cd build/ios/iphoneos
+      #     mkdir Payload
+      #     cd Payload
+      #     ln -s ../Runner.app
+      #     cd ..
+      #     zip -r app.ipa Payload
+      - name: Extract branch name
+        shell: bash
+        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
       - name: Push to Releases
+        id: release
         uses: ncipollo/release-action@v1
         with:
           artifacts: "build/app/outputs/apk/debug/*,build/ios/iphoneos/app.ipa"
-          tag: v1.0.${{ github.run_number }}
+          tag: ${{env.TAG}}
           token: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
+          prerelease: ${{github.ref != 'refs/heads/master'}}
+          body: "${{ github.event.head_commit.message }}"
+          allowUpdates: ${{github.ref != 'refs/heads/master'}}
+          name: 'Develop: ${{ github.event.pull_request.title }}-${{ github.event.pull_request.title }}-${{ github.run_number }}'
+      - name: Comment PR
+        uses: actions/github-script@0.3.0
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.FLUTTER_APP_ONLY_REPO }}
+          script: |
+            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+            github.issues.createComment({ issue_number, owner, repo, body: '[Baixar apk](${{ steps.release.outputs.html_url}})' });
